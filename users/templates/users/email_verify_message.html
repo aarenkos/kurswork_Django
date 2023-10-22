@@ -1,0 +1,7 @@
+{% autoescape off %}
+Добрый день! Пожалуйста, перейдите по ссылке ниже для подтверждения электронной почты:
+{% block reset_link %}
+http://{{ domain }}{% url 'users:email_verify_done' uidb64=uid token=token %}
+{% endblock %}
+RedDeadMail!
+{% endautoescape %}

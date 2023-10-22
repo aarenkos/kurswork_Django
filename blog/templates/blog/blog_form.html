@@ -1,0 +1,30 @@
+{% extends 'mailing/index.html'%}
+{% block content %}
+
+<div class="container">
+    <div class="row text-start">
+        <div class="col-6">
+            <div class="card">
+                <div class="card-header">Создание статьи</div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <div class="btn-group">
+                            <button type="submit" class="btn btn-outline-dark">
+                                {% if object %}
+                                Сохранить
+                                {% else %}
+                                Создать
+                                {% endif %}
+                            </button>
+                            <a href="{% url 'blog:blog_home' %}"
+                               class="btn btn-outline-dark">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

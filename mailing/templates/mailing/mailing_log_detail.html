@@ -1,0 +1,41 @@
+{% extends 'mailing/index.html' %}
+
+{% block content %}
+<div class="col-12">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        {{ object }}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p>
+                        Дата и время попытки: {{ object.timestamp }}
+                    </p>
+                    <p>
+                        Cтатус попытки: "{{ object.status }}"
+                    </p>
+                    {% if object.server_response %}
+                    <p>
+                        Ответ почтового сервера {{ object.server_response }}
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="card-text">Создатель: {{ object.user }}</div>
+                    <div class="right-button">
+                        <a onclick="goBack()" class="btn btn-warning mt-2">Назад</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function goBack() {
+  window.history.back();
+}
+</script>
+{% endblock %}

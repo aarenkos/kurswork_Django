@@ -1,0 +1,23 @@
+{% extends 'mailing/index.html'%}
+{% block content %}
+
+<div class="container">
+    <div class="col-2">
+        <div class="row">
+                <div class="card">
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <p>Удалить статью?</p>
+                            <div class="btn-group">
+                                <button type="submit" class="btn btn-outline-dark">Да</button>
+                                <a href="{% url 'blog:blog_home' %}" type="button" class="btn btn-outline-dark">Отменить</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,8 @@
+{% autoescape off %}
+Добрый день! Вот ваш новый пароль: {{ new_password }}
+Пожалуйста, перейдите по ссылке ниже для того, чтобы войти:
+{% block link %}
+http://{{ domain }}{% url 'users:login' %}
+{% endblock %}
+RedDeadMail!
+{% endautoescape %}

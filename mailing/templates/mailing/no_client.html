@@ -1,0 +1,22 @@
+{% extends 'mailing/index.html' %}
+
+{% block content %}
+<div class="col-12">
+    <div class="col-md-6 mx-auto">
+        <div class="card">
+            <div class="card-body">
+                <p>Вы не выбрали ни одного клиента!</p>
+                <a onclick="goBack()" class="btn btn-warning">Вернуться</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function goBack() {
+  window.history.back();
+}
+
+
+</script>
+{% endblock %}

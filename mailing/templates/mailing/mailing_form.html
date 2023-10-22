@@ -1,0 +1,89 @@
+{% extends 'mailing/index.html' %}
+{% block content %}
+<div class="col-12">
+   <div class="col-md-6 mx-auto">
+      <div class="card">
+         {% if object %}
+         <div class="card-header">Изменение рассылки "{{ object.mail_theme }}".</div>
+         {% else %}
+         <div class="card-header">Создание рассылки.</div>
+         {% endif %}
+         <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+               {% csrf_token %}
+               {{ form.mailing_time.label_tag }}{{ form.mailing_time }}
+               {% if clients.count == 0 %}
+               <div class="mt-3">
+                  {{ form.clients.label_tag }}
+               </div>
+               <div class="alert alert-info">
+                  Клиенты не обнаружены.
+               </div>
+               <a href="{% url 'mailing:create_client' %}" class="btn btn-primary">Добавить клиента</a>
+               {% else %}
+               <div class="mt-3">
+                  {{ form.clients.label_tag }}{{ form.clients }}
+               </div>
+               {% endif %}
+               <div class="mt-3">
+                  {{ form.regularity.label_tag }}{{ form.regularity }}
+               </div>
+               <div class="mt-3">
+                  {{ form.mail_theme.label_tag }}{{ form.mail_theme }}
+               </div>
+               <div class="mt-3">
+                  {{ form.mail_text.label_tag }}{{ form.mail_text }}
+               </div>
+               <button type="submit" name="save_mailing" class="btn btn-success mt-3">
+               {% if object %}
+                  Сохранить
+               {% else %}
+                  Создать
+               {% endif %}
+               </button>
+               {% if clients.count > 1 %}
+               <a id="select-all-clients" type="submit" name="save_clients" class="btn btn-primary custom-button mt-3">
+                  Выбрать всех клиентов
+               </a>
+               {% endif %}
+               {% if clients.count > 0 %}
+                  <a href="{% url 'mailing:create_client' %}" class="btn btn-primary mt-3">Добавить клиента</a>
+               {% endif %}
+               {% if clients.count <= 1 %}
+                  <a onclick="goBack()" class="btn btn-warning mt-3">Отмена</a>
+               {% else %}
+                  <a onclick="goBack()" class="btn btn-warning mt-2">Отмена</a>
+               {% endif %}
+            </form>
+         </div>
+      </div>
+   </div>
+</div>
+
+<script>
+   document.addEventListener("DOMContentLoaded", function () {
+       const selectAllClientsButton = document.getElementById("select-all-clients");
+       const clientCheckboxes = document.querySelectorAll('input[name="clients"]');
+
+       selectAllClientsButton.addEventListener("click", function (event) {
+           event.preventDefault();
+
+           for (const checkbox of clientCheckboxes) {
+               checkbox.checked = true;
+           }
+       });
+   });
+</script>
+
+<script>
+function goBack() {
+  window.history.back();
+}
+</script>
+
+<style>
+   .custom-button {
+   color: white !important;
+   }
+</style>
+{% endblock %}

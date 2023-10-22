@@ -1,0 +1,23 @@
+{% extends 'mailing/index.html' %}
+{% block content %}
+<div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+    <h1 class="display-4">Отчеты</h1>
+</div>
+<div class="row text-center mt-3">
+    {% for object in object_list %}
+    <div class="col-12">
+        <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">{{ object }}</h4>
+            </div>
+            <div class="card-body ms-auto">
+                <a href="{% url 'mailing:mailing_log_detail' object.pk %}" type="button"
+                   class="btn btn-lg btn-block btn-outline-primary ms-auto">Подробнее</a>
+                <a href="{% url 'mailing:delete_mailing_log' object.pk %}" type="button"
+                   class="btn btn-lg btn-block btn-outline-danger ms-auto">Удалить</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
