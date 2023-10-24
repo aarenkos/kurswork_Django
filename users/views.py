@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetDoneView
 from django.contrib.sites.shortcuts import get_current_site
@@ -20,8 +21,16 @@ class RegisterView(CreateView):
     model = User
     form_class = UserRegisterForm
     template_name = 'users/register.html'
-    success_url = reverse_lazy('users:login')
+    success_url = reverse_lazy('users:email_verify')
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        email = form.cleaned_data['email']
+        password = form.cleaned_data['password1']
+        user = authenticate(self.request, email=email, password=password)
+        if user is not None:
+            login(self.request, user)
+        return response
 
 class ResetView(FormView):
     model = User
@@ -140,3 +149,4 @@ class EmailVerifyDoneView(View):
             return render(request, self.template_name)
         else:
             return render(request, self.unsuccessful_template_name)
+

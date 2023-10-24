@@ -13,7 +13,6 @@ class User(AbstractUser):
     phone = models.CharField(max_length=35, verbose_name='телефон', **NULLABLE)
     avatar = models.ImageField(upload_to='users/', verbose_name='аватар', **NULLABLE)
     country = models.CharField(max_length=50, verbose_name='страна', **NULLABLE)
-
     is_email_active = models.BooleanField(default=False, verbose_name='верификация по почте')
     is_active = models.BooleanField(default=True, verbose_name='признак активности')
 

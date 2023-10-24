@@ -1,14 +1,27 @@
-from random import random, shuffle
+from random import  shuffle
+from django.core.cache import cache
 
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from blog.models import Blog
+from config.settings import CACHE_ENABLED
 from mailing.models import Mailing, Client
 # Create your views here.
 
 
 class BlogListView(ListView):
     model = Blog
+
+    def cache_example(self):
+        if CACHE_ENABLED:
+            blog_list = cache.get('blog_list_cache')
+            if blog_list is None:
+                blog_list = super().get_queryset()
+                cache.set('blog_list_cache', blog_list)
+        else:
+            blog_list = super().get_queryset()
+        return blog_list
+
 
 class HomeListView(ListView):
     model = Blog
@@ -25,10 +38,19 @@ class HomeListView(ListView):
         return context
 
     def get_queryset(self, *args, **kwargs):
-        queryset = super().get_queryset(*args, **kwargs)
-        queryset = list(queryset)
-        shuffle(queryset)
+        if CACHE_ENABLED:
+            queryset = cache.get('home_list_cache')
+            if queryset is None:
+                queryset = super().get_queryset(*args, **kwargs)
+                queryset = list(queryset)
+                shuffle(queryset)
+                cache.set('home_list_cache', queryset)
+        else:
+            queryset = super().get_queryset(*args, **kwargs)
+            queryset = list(queryset)
+            shuffle(queryset)
         return queryset[:3]
+
 
 class BlogCreateView(CreateView):
     model = Blog

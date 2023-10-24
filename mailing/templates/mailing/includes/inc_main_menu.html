@@ -8,9 +8,9 @@
         <a class="p-2 btn btn-outline-primary" href="{% url 'users:register' %}">Регистрация</a>
         <a class="p-2 btn btn-outline-primary" href="{% url 'users:login' %}">Войти</a>
         {% else %}
-            {% if not user.is_email_active %}
-            <a class="p-2 btn btn-outline-primary" href="{% url 'users:email_verify' %}">Подтвердить Email</a>
-            {% endif %}
+<!--            {% if not user.is_email_active %}-->
+<!--            <a class="p-2 btn btn-outline-primary" href="{% url 'users:email_verify' %}">Подтвердить Email</a>-->
+<!--            {% endif %}-->
         <a class="p-2 btn btn-outline-primary" href="{% url 'users:logout' %}">Выйти</a>
         {% endif %}
         <a class="p-2 btn btn-outline-primary" href="/">Главная</a>
