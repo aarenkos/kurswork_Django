@@ -8,6 +8,7 @@ class UserRegisterForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('email', 'password1', 'password2')
+        action = 'users:login'
 
 
 class PasswordAltResetForm(forms.Form):

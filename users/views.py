@@ -1,3 +1,5 @@
+# from django.contrib.auth import authenticate, login
+from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetDoneView
 from django.contrib.sites.shortcuts import get_current_site
@@ -10,17 +12,43 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views import View
 from django.views.generic import CreateView, FormView
-
+import re
 from users.forms import UserRegisterForm, PasswordAltResetForm
 from users.models import User
-
+from django.http import HttpResponse
 
 # Create your views here.
+from django.contrib.auth.tokens import default_token_generator
+
 class RegisterView(CreateView):
     model = User
     form_class = UserRegisterForm
     template_name = 'users/register.html'
     success_url = reverse_lazy('users:login')
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        user = form.save()
+        token_generator = default_token_generator
+        user.save()
+        token = token_generator.make_token(user)
+        user.token = token
+        user.save()
+        current_site = get_current_site(self.request)
+        context = {
+            'user': user,
+            'domain': current_site.domain,
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+            'token': token,
+        }
+        message = render_to_string('users/email_verify_message.html', context=context)
+        email = EmailMessage(
+            'Подтверждение электронной почты',
+            message,
+            to=[user.email],
+        )
+        email.send()
+        return response
 
 
 class ResetView(FormView):
@@ -69,74 +97,41 @@ class ResetDoneView(PasswordResetDoneView):
     title = "Сообщение отправлено!"
 
 
-class EmailVerifyView(FormView):
-    model = User
-    email_template_name = "users/email_verify_message.html"
-    template_name = 'users/email_verify_confirm.html'
-    success_url = 'users/email_verify_sended.html'
-    token_generator = default_token_generator
-
-    @staticmethod
-    def send_mail_for_verify(request, user, token_generator):
-        current_site = get_current_site(request)
-        context = {
-            'user': user,
-            'domain': current_site.domain,
-            "uid": urlsafe_base64_encode(force_bytes(user.pk)),
-            "token": token_generator.make_token(user),
-        }
-        message = render_to_string('users/email_verify_message.html', context=context)
-        email = EmailMessage(
-            'Подтверждение электронной почты',
-            message,
-            to=[user.email],
-        )
-        email.send()
-
-    def get(self, request, **kwargs):
-        return render(request, self.template_name)
-
-    def post(self, request, **kwargs):
-        user = request.user
-        self.send_mail_for_verify(request, user, self.token_generator)
-        return render(request, self.success_url)
-
-
 class EmailVerifyDoneView(View):
-    model = User
     template_name = 'users/email_verify_done.html'
     unsuccessful_template_name = 'users/email_verify_unsuccessful.html'
-    anonim_template_name = 'users/email_verify_anonim.html'
     token_generator = default_token_generator
 
     @staticmethod
-    def get_user(model, uidb64):
+    def get_user(uidb64):
         try:
             uid = urlsafe_base64_decode(uidb64).decode()
-            user = model.objects.get(pk=uid)
-        except (
-                TypeError,
-                ValueError,
-                OverflowError,
-                model.DoesNotExist,
-                ValidationError,
-        ):
-            user = None
-        return user
+            User = get_user_model()
+            user = User.objects.get(pk=uid)
+            token = user.token
+            return user, token
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return None
 
     def get(self, request, uidb64, token, **kwargs):
-        user = request.user
-        print(user.pk)
-
-        if user.pk is None:
-            return render(request, self.anonim_template_name)
-
-        user_for_email_activation = self.get_user(self.model, uidb64)
-        token_for_email_activation = self.token_generator.check_token(user, token)
-
-        if user == user_for_email_activation and token_for_email_activation:
+        user, token = self.get_user(uidb64)
+        # print(user)
+        # print(token)
+        url = request.build_absolute_uri()
+        print (url)
+        if not user:
+            print('Пользователь не найден')
+            return HttpResponse('Пользователь не найден')
+        url_split = url.split('/')
+        print(url_split)
+        user_token = url_split[-2]
+        print(user_token)
+        if user.is_email_active:
+            return HttpResponse('Уже подтвержден')
+        if user_token == token:
             user.is_email_active = True
             user.save()
             return render(request, self.template_name)
         else:
+            # Токен недействителен или пользователь не найден
             return render(request, self.unsuccessful_template_name)
