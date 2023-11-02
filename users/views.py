@@ -3,7 +3,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import PasswordResetDoneView
 from django.contrib.sites.shortcuts import get_current_site
-from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
@@ -11,8 +10,7 @@ from django.urls import reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.views import View
-from django.views.generic import CreateView, FormView
-import re
+from django.views.generic import CreateView, FormView, TemplateView
 from users.forms import UserRegisterForm, PasswordAltResetForm
 from users.models import User
 from django.http import HttpResponse
@@ -20,11 +18,12 @@ from django.http import HttpResponse
 # Create your views here.
 from django.contrib.auth.tokens import default_token_generator
 
+
 class RegisterView(CreateView):
     model = User
     form_class = UserRegisterForm
     template_name = 'users/register.html'
-    success_url = reverse_lazy('users:login')
+    success_url = reverse_lazy('users:email_verify_sended')
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -96,6 +95,9 @@ class ResetDoneView(PasswordResetDoneView):
     template_name = 'users/reset_done.html'
     title = "Сообщение отправлено!"
 
+class EmailVerifySendedView(TemplateView):
+    template_name = 'users/email_verify_sended.html'
+
 
 class EmailVerifyDoneView(View):
     template_name = 'users/email_verify_done.html'
@@ -130,6 +132,7 @@ class EmailVerifyDoneView(View):
             return HttpResponse('Уже подтвержден')
         if user_token == token:
             user.is_email_active = True
+            user.is_active = True
             user.save()
             return render(request, self.template_name)
         else:
